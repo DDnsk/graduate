@@ -1,7 +1,6 @@
 # coding=utf-8
 __author__ = 'nsk'
 import re
-
 from bs4 import BeautifulSoup
 
 
@@ -20,7 +19,8 @@ def process(file_input):
     """
 
     a = {}
-    soup = BeautifulSoup(file_input.read(), 'html5lib')
+    # soup = BeautifulSoup(file_input.read(), 'html5lib')
+    soup = BeautifulSoup(file_input.read(), 'lxml')
     a['article_title'] = soup.title.string.strip()
     full_text = []
     index = -1
