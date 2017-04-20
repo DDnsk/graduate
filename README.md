@@ -1,7 +1,8 @@
 # graduate
 Project for graduation design
-==========================================
-&&&Structure of the Article instance.
+
+
+Structure of the Article instance.
   Article
     Part1
       Paragraph1
@@ -13,9 +14,11 @@ Project for graduation design
         Sentence3
     Part2
       ...
-===========================================
-&&&Class design in detail
-There are 5 classes: Article, Part, Para, Sentence, Ref.
+
+
+Class design in detail
+
+  There are 5 classes: Article, Part, Paragraph, Sentence, Ref.
 
   Article(class)
     attributes
