@@ -56,9 +56,9 @@ def extract_to_tree(a):
         tmp_part = Part()
         tmp_part.index_in_article = index_part - 1
         tmp_part.title_part = a[index_part]['title']
+        check_normal(tmp_part)  # check if this part is a normal part, or it could be Reference or Keyword part
         tmp_para_list = a[index_part]['content'].split('%%%')
         tmp_para_list = list_clean(tmp_para_list)
-
         # Reference part is handled differently
         if tmp_part.title_part == 'References':
             for index_para in range(0, len(tmp_para_list)):
@@ -136,9 +136,20 @@ def list_clean(list_input):
             list_output.append(element)
     return list_output
 
+def check_normal(part):
+
+    abnormal_list = ['reference', 'keyword', 'abstract', 'highlight']
+
+    for term in abnormal_list:
+        if term in part.title_part.lower():
+            part.isNormal = 0
+
+
 def main():
     file_path = 'article_done/article_0.html'
     article = extract_to_tree(process(load_file(file_path)))
+
+    article.sentence_word_split()
     article.display()
 
 

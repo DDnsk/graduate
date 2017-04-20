@@ -1,5 +1,7 @@
 # coding=utf-8
 __author__ = 'Dnsk'
+import re
+import nltk
 
 class Article:
     """
@@ -11,15 +13,28 @@ class Article:
 
     def display(self):
         for part in self.part_list:
+            # just display normal part of the article
+            if part.isNormal == 0:
+                continue
+
             print part.title_part
+
             if part.title_part == 'References':
                 for ref in part.ref_list:
                     print ref.content
                 continue
+
             for paragraph in part.paragraph_list:
                 for sentence in paragraph.sentence_containing:
                     print sentence.original_sentence.encode('GB18030')
+                    print sentence.word_split_list
             print '\n'
+
+    def sentence_word_split(self):
+        for part in [normalpart for normalpart in self.part_list if normalpart.isNormal == 1]:
+            for paragraph in part.paragraph_list:
+                for sentence in paragraph.sentence_containing:
+                    sentence.word_split()
 
 class Part:
     """
@@ -30,7 +45,7 @@ class Part:
         self.index_in_article = 0
         self.paragraph_list = []
         self.ref_list = []
-
+        self.isNormal = 1
 
 class Paragraph:
     """
@@ -49,9 +64,13 @@ class Sentence:
         self.index_in_paragraph = 0
         self.original_sentence = ''
         self.tf_isf = {}
+        self.word_split_list = []
 
     def sentence_length(self):
         return len(self.tf_isf)
+
+    def word_split(self):
+        self.word_split_list = re.split(r'\s+', self.original_sentence)
 
 
 class Ref:
@@ -63,13 +82,4 @@ class Ref:
         self.content = ''
 
 if __name__ == '__main__':
-    para_1 = Paragraph()
-    para_1.title_of_part = 'Introduction'
-    sen_1 = Sentence()
-    sen_1.original_sentence = 'Hello World!'
-    sen_2 = Sentence()
-    sen_2.original_sentence = 'Hello World2'
-    para_1.sentence_containing.append(sen_1)
-    para_1.sentence_containing.append(sen_2)
-    print para_1.sentence_containing[0].original_sentence
-    print para_1.sentence_containing[1].original_sentence
+    print 'hello there'
