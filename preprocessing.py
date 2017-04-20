@@ -4,7 +4,7 @@ import re
 from bs4 import BeautifulSoup
 import nltk
 
-from class_list import Article, Part, Paragraph, Sentence
+from class_list import Article, Part, Paragraph, Sentence, Ref
 
 
 def load_file(file_path):
@@ -24,7 +24,7 @@ def process(file_input):
 
     a = []
     # soup = BeautifulSoup(file_input.read(), 'html5lib')
-    soup = BeautifulSoup(file_input.read(), 'lxml')
+    soup = BeautifulSoup(file_input.read(), 'html5lib')
     a.append(soup.title.string.strip())
     full_text = []
     index = -1
@@ -48,7 +48,7 @@ def process(file_input):
 def extract_to_tree(a):
     """
     :param a: returned by preprocessing
-    :return:
+    :return: an Article instance
     """
 
     article_ins = Article(a[0])
@@ -58,6 +58,18 @@ def extract_to_tree(a):
         tmp_part.title_part = a[index_part]['title']
         tmp_para_list = a[index_part]['content'].split('%%%')
         tmp_para_list = list_clean(tmp_para_list)
+
+        # Reference part is handled differently
+        if tmp_part.title_part == 'References':
+            for index_para in range(0, len(tmp_para_list)):
+                tmp_ref = Ref()
+                tmp_ref.index_ref = index_para
+                tmp_ref.content = tmp_para_list[index_para]
+                tmp_part.ref_list.append(tmp_ref)
+            article_ins.part_list.append(tmp_part)
+            continue
+
+        # handling regular part
         for index_para in range(0, len(tmp_para_list)):
             tmp_para = Paragraph()
             tmp_para.index_in_part = index_para
@@ -70,7 +82,7 @@ def extract_to_tree(a):
                 # 句子分词，求tfisf都还没有
             tmp_part.paragraph_list.append(tmp_para)
         article_ins.part_list.append(tmp_part)
-    article_ins.display()
+    return article_ins
 
 def para2sentence(para):
     """
@@ -78,11 +90,39 @@ def para2sentence(para):
     :param para: paragraph as input
     :return: a list, containing sentences as their original form
     """
+    # split sentences using tools from nltk
     sent_tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
     sents = sent_tokenizer.tokenize(para)
-    return sents
 
+    # fix some unexpected sentence-splitting problems
+    sents_new = check_split_validity(sents)
 
+    return sents_new
+
+def check_split_validity(list_input):
+    """
+    Since sentence splitting results could be imperfect, this function help with fix some of the splitting problems.
+    (the appearance of 'i.e.' or 'Fig.' could result in unexpected splitting.)
+
+    :param list_input: Sentence splitting results as list, with the help of
+    nltk.data.load('tokenizers/punkt/english.pickle').
+    :return:list_output: A new sentence list, merging sentences that are split unexpectedly.
+    """
+    ept_list = ['fig.', 'eqs.', 'i.e.', 'eq.']  # to store the unexpected cases
+    list_output = []
+    flg = 0
+    for sentence in list_input:
+        if flg == 1:
+            sentence = tmp_s + sentence
+            flg = 0
+        for ept in ept_list:
+            if ept in sentence[-5:].lower():
+                tmp_s = sentence
+                flg = 1
+                break
+        if flg == 0:
+            list_output.append(sentence)
+    return list_output
 
 def list_clean(list_input):
     """
@@ -98,7 +138,8 @@ def list_clean(list_input):
 
 def main():
     file_path = 'article_done/article_0.html'
-    extract_to_tree(process(load_file(file_path)))
+    article = extract_to_tree(process(load_file(file_path)))
+    article.display()
 
 
 

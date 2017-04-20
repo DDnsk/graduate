@@ -12,11 +12,12 @@ class Article:
     def display(self):
         for part in self.part_list:
             print part.title_part
-            # print 'This is the no. %d part in this article. ' % part.index_in_article
+            if part.title_part == 'References':
+                for ref in part.ref_list:
+                    print ref.content
+                continue
             for paragraph in part.paragraph_list:
-                # print 'This is the no. %d paragraph in this part. ' % paragraph.index_in_part
                 for sentence in paragraph.sentence_containing:
-                    # print 'This is the no. %d sentence in this paragraph. ' % sentence.index_in_paragraph
                     print sentence.original_sentence.encode('GB18030')
             print '\n'
 
@@ -28,6 +29,7 @@ class Part:
         self.title_part = ''
         self.index_in_article = 0
         self.paragraph_list = []
+        self.ref_list = []
 
 
 class Paragraph:
@@ -51,6 +53,14 @@ class Sentence:
     def sentence_length(self):
         return len(self.tf_isf)
 
+
+class Ref:
+    """
+
+    """
+    def __init__(self):
+        self.index_ref = 0
+        self.content = ''
 
 if __name__ == '__main__':
     para_1 = Paragraph()
