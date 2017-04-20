@@ -9,6 +9,17 @@ class Article:
         self.title_main = title
         self.part_list = []
 
+    def display(self):
+        for part in self.part_list:
+            print part.title_part
+            # print 'This is the no. %d part in this article. ' % part.index_in_article
+            for paragraph in part.paragraph_list:
+                # print 'This is the no. %d paragraph in this part. ' % paragraph.index_in_part
+                for sentence in paragraph.sentence_containing:
+                    # print 'This is the no. %d sentence in this paragraph. ' % sentence.index_in_paragraph
+                    print sentence.original_sentence.encode('GB18030')
+            print '\n'
+
 class Part:
     """
 

@@ -2,6 +2,7 @@
 __author__ = 'nsk'
 import re
 from bs4 import BeautifulSoup
+import nltk
 
 from class_list import Article, Part, Paragraph, Sentence
 
@@ -34,8 +35,9 @@ def process(file_input):
                 full_text.append({'title': tag_sec.string, 'content': ''})
             if tag_sec.name == 'p':
                 full_text[index]['content'] += '''%%%'''
-                for tmp in tag_sec.stripped_strings:
-                    full_text[index]['content'] += tmp
+                for tmp in tag_sec.strings:
+                    full_text[index]['content'] += tmp.replace(u'\xa0', ' ')
+                    # '\xa0' is the '&nbsp;', which should be removed
     for dic in full_text:
         a.append(dic)
         # print dic['title']
@@ -59,14 +61,16 @@ def extract_to_tree(a):
         for index_para in range(0, len(tmp_para_list)):
             tmp_para = Paragraph()
             tmp_para.index_in_part = index_para
-
-            tmp_sentence_list = para2sentence(tmp_para)
-
-
+            tmp_sentence_list = para2sentence(tmp_para_list[index_para])
+            for index_sentence in range(0, len(tmp_sentence_list)):
+                tmp_sentence = Sentence()
+                tmp_sentence.index_in_paragraph = index_sentence
+                tmp_sentence.original_sentence = tmp_sentence_list[index_sentence]
+                tmp_para.sentence_containing.append(tmp_sentence)
+                # 句子分词，求tfisf都还没有
+            tmp_part.paragraph_list.append(tmp_para)
         article_ins.part_list.append(tmp_part)
-    for item in article_ins.part_list:
-        # print item.index_in_article
-        print item.title_part
+    article_ins.display()
 
 def para2sentence(para):
     """
@@ -74,6 +78,10 @@ def para2sentence(para):
     :param para: paragraph as input
     :return: a list, containing sentences as their original form
     """
+    sent_tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+    sents = sent_tokenizer.tokenize(para)
+    return sents
+
 
 
 def list_clean(list_input):
@@ -91,6 +99,8 @@ def list_clean(list_input):
 def main():
     file_path = 'article_done/article_0.html'
     extract_to_tree(process(load_file(file_path)))
+
+
 
 if __name__ == '__main__':
     main()
